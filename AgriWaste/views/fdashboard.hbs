@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Farmer Dashboard</title>
+    <style>
+       
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: url("imgg.png") no-repeat center center/cover;
+      background-attachment: fixed;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    
+    /* Dark overlay */
+    .overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background-color: rgba(0, 0, 0, 0.45);
+      z-index: -1;
+    }
+
+    /* Transparent container */
+    .container {
+      position: relative;
+      background: rgba(255, 255, 255, 0);  /* fully transparent */
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+      max-width: 650px;
+      width: 90%;
+      padding: 35px;
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      box-shadow: 0 10px 35px rgba(0, 0, 0, 0.4);
+      color: #fff;
+
+      /* Animation */
+      opacity: 0;
+      transform: scale(0.9);
+      animation: fadeZoomIn 1s ease forwards;
+    }
+
+    @keyframes fadeZoomIn {
+      0% {
+        opacity: 0;
+        transform: scale(0.9) translateY(20px);
+      }
+      100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 25px;
+      color: #e8f5e9;
+      font-size: 1.8rem;
+    }
+
+    label {
+      font-weight: bold;
+      margin-top: 12px;
+      display: block;
+      color: #f1f8e9;
+    }
+
+    input, textarea, input[type="file"] {
+      width: 100%;
+      padding: 12px;
+      margin-top: 6px;
+      font-size: 14px;
+      border: none;
+      border-radius: 12px;
+      outline: none;
+      background: rgba(255, 255, 255, 0.15);
+      color: #fff;
+      box-shadow: inset 0 2px 5px rgba(0,0,0,0.2);
+      transition: 0.3s ease, transform 0.2s ease;
+    }
+
+    input:focus, textarea:focus {
+      background: rgba(255, 255, 255, 0.25);
+      box-shadow: 0 0 10px rgba(76, 175, 80, 0.9);
+      transform: scale(1.02);
+    }
+
+    button {
+      padding: 12px 20px;
+      margin-top: 18px;
+      border: none;
+      border-radius: 12px;
+      font-size: 15px;
+      cursor: pointer;
+      transition: 0.3s ease;
+      font-weight: bold;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    }
+
+    button[type="submit"] {
+      background: rgba(46, 125, 50, 0.8);
+      color: #fff;
+    }
+
+    button[type="submit"]:hover {
+      background: rgba(27, 94, 32, 1);
+      transform: scale(1.05);
+      box-shadow: 0 8px 20px rgba(27, 94, 32, 0.6);
+    }
+
+    button[type="button"] {
+      background: rgba(245, 124, 0, 0.85);
+      color: #fff;
+      margin-left: 10px;
+    }
+
+    button[type="button"]:hover {
+      background: rgba(230, 81, 0, 1);
+      transform: scale(1.05);
+      box-shadow: 0 8px 20px rgba(230, 81, 0, 0.6);
+    }
+
+    .btn-group {
+      text-align: center;
+    }
+  </style>
+  
+</head>
+<body style="background-color: #38E54D;">
+    <div class="container">
+        <h2>Farmer Dashboard</h2>
+        <form id="farmerForm">
+            <label for="name">Farmer Name:</label>
+            <input type="text" id="name" name="name" required>
+
+            <label for="Email">Email:</label>
+            <input type="email" id="Email" name="email" required>
+
+            <label for="location">Current Location:</label>
+            <input type="text" id="location" name="location" required>
+            <button type="button" onclick="getLocation()">📍 Get Location</button>
+
+            <label for="waste">Waste Details:</label>
+            <textarea id="waste" name="waste" rows="4" required></textarea>
+
+            <label for="farmerPhoto">Farmer Photo:</label>
+            <input type="file" id="farmerPhoto" name="farmerPhoto" accept="image/*">
+
+            <label for="photo">Waste Photo:</label>
+            <input type="file" id="photo" name="photo" accept="image/*">
+
+            <button type="submit">Submit</button>
+            <button type="button" onclick="goBack()">Back</button>
+        </form>
+    </div>
+
+<script>
+    function getLocation() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(showPosition, showError);
+        } else {
+            alert("Geolocation not supported.");
+        }
+    }
+
+    function showPosition(position) {
+        let lat = position.coords.latitude;
+        let lon = position.coords.longitude;
+
+        fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`)
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById("location").value =
+                    (data && data.display_name) ? data.display_name : `${lat}, ${lon}`;
+            })
+            .catch(() => {
+                document.getElementById("location").value = `${lat}, ${lon}`;
+            });
+    }
+
+    function showError(error) {
+        alert("Error getting location: " + error.message);
+    }
+
+    // Convert image file to Base64
+    function readImage(file) {
+        return new Promise((resolve) => {
+            if (!file) return resolve("");
+            const reader = new FileReader();
+            reader.onload = e => resolve(e.target.result);
+            reader.readAsDataURL(file);
+        });
+    }
+
+    // Submit form
+    document.getElementById("farmerForm").addEventListener("submit", async function(e) {
+        e.preventDefault();
+
+        const name = document.getElementById("name").value;
+        const email = document.getElementById("Email").value;
+        const location = document.getElementById("location").value;
+        const waste = document.getElementById("waste").value;
+
+        const farmerPhotoFile = document.getElementById("farmerPhoto").files[0];
+        const wastePhotoFile = document.getElementById("photo").files[0];
+
+        const farmerPhoto = await readImage(farmerPhotoFile);
+        const wastePhoto = await readImage(wastePhotoFile);
+
+        // Send data to backend
+        const response = await fetch("/farmer/submit", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name, email, location, waste, farmerPhoto, photo: wastePhoto })
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+            alert("Submitted successfully!");
+            window.location.href = "/farmer/profile";
+        } else {
+            alert(result.msg || "Submission failed");
+        }
+    });
+
+    function goBack() {
+        window.location.href = "/flogin";
+    }
+</script>
+</body>
+</html>

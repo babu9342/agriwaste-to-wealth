@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Company Dashboard</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            padding: 20px; 
+            background-color: #4ED7F1; 
+        }
+        .container { 
+            max-width: 600px; 
+            margin: auto; 
+            background: white; 
+            padding: 20px; 
+            border-radius: 10px; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
+        }
+        input, textarea, select { 
+            width: 100%; 
+            padding: 8px; 
+            margin: 10px 0; 
+            border-radius: 5px; 
+            border: 1px solid #ccc; 
+            box-sizing: border-box;
+        }
+        button { 
+            padding: 10px 20px; 
+            margin-right: 10px; 
+            border: none; 
+            border-radius: 5px; 
+            background: #38B6FF; 
+            color: white; 
+            cursor: pointer; 
+        }
+        button:hover { 
+            background: #2196F3; 
+        }
+        .logo-preview { 
+            width: 120px; 
+            height: 120px; 
+            object-fit: cover; 
+            border-radius: 10px; 
+            border: 2px solid #38B6FF; 
+            margin-top: 10px; 
+        }
+        label { 
+            font-weight: bold; 
+            display: block;
+            margin-top: 10px;
+        }
+        .error {
+            color: red;
+            background-color: #ffeeee;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+        .success {
+            color: green;
+            background-color: #eeffee;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+        .location-btn {
+            background: #4CAF50;
+            margin-top: 5px;
+        }
+        .location-btn:hover {
+            background: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Company Dashboard </h2>
+        
+        {{#if error}}
+            <div class="error">{{error}}</div>
+        {{/if}}
+        
+        {{#if success}}
+            <div class="success">{{success}}</div>
+        {{/if}}
+
+      <form id="companyForm" method="POST" action="/company/dashboard/submit" enctype="multipart/form-data">
+  <label for="logo">Company Logo:</label>
+  <input type="file" id="logo" name="logo" accept="image/*">
+  <img id="logoPreview" class="logo-preview" style="display:none;">
+
+  <label for="name">Company Name:</label>
+  <input type="text" id="name" name="name" required value="{{companyName}}">
+  
+  <label for="Email">Company Email:</label>
+  <input type="email" id="Email" name="Email" required>
+  
+  <label for="Address">Company Address:</label>
+  <input type="text" id="Address" name="Address" required>
+  <button type="button" onclick="getLocation()">📍 Get Location</button>
+  
+  <label for="Quantity">Required Quantity:</label>
+  <input type="text" id="Quantity" name="Quantity" required>
+  
+  <label for="requirement">Requirements:</label>
+  <textarea id="requirement" name="requirement" rows="4" required></textarea>
+
+  <button type="submit">Submit</button> 
+  <button type="reset">Reset</button>
+  <button type="button" onclick="goToProfile()">View Profile</button>
+</form>
+    </div>
+
+    <script>
+        // Logo Preview
+        document.getElementById("logo").addEventListener("change", function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = document.getElementById("logoPreview");
+                    img.src = e.target.result;
+                    img.style.display = "block";
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        function getLocation() {
+            if (navigator.geolocation) {
+                document.getElementById("Address").placeholder = "Getting location...";
+                navigator.geolocation.getCurrentPosition(showPosition, showError, {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 0
+                });
+            } else {
+                alert("Geolocation is not supported by this browser.");
+            }
+        }
+
+        function showPosition(position) {
+            let lat = position.coords.latitude;
+            let lon = position.coords.longitude;
+            
+            fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&addressdetails=1`, {
+                headers: { "User-Agent": "CompanyDashboardApp/1.0" }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data && data.display_name) {
+                    document.getElementById("Address").value = data.display_name;
+                } else {
+                    document.getElementById("Address").value = `Latitude: ${lat}, Longitude: ${lon}`;
+                }
+            })
+            .catch(() => {
+                document.getElementById("Address").value = `Latitude: ${lat}, Longitude: ${lon}`;
+            });
+        }
+
+        function showError(error) {
+            let errorMessage = "Unable to get location: ";
+            switch (error.code) {
+                case error.PERMISSION_DENIED:
+                    errorMessage += "User denied the request for Geolocation.";
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    errorMessage += "Location information is unavailable.";
+                    break;
+                case error.TIMEOUT:
+                    errorMessage += "The request to get user location timed out.";
+                    break;
+                default:
+                    errorMessage += "An unknown error occurred.";
+            }
+            alert(errorMessage);
+            document.getElementById("Address").placeholder = "Enter company address manually";
+        }
+
+        // Basic form validation
+        document.getElementById("companyForm").addEventListener("submit", function(e) {
+            const name = document.getElementById("name").value;
+            const email = document.getElementById("Email").value;
+            const address = document.getElementById("Address").value;
+            const quantity = document.getElementById("Quantity").value;
+            const requirement = document.getElementById("requirement").value;
+            
+            if (!name || !email || !address || !quantity || !requirement) {
+                e.preventDefault();
+                alert("Please fill in all required fields.");
+                return false;
+            }
+            
+            // Email validation
+            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailPattern.test(email)) {
+                e.preventDefault();
+                alert("Please enter a valid email address.");
+                return false;
+            }
+        });
+
+        function goToProfile() {
+            window.location.href = "/company/profile";
+        }
+
+        function goBack() {
+            window.location.href = "/company/login";
+        }
+    </script>
+</body>
+</html>

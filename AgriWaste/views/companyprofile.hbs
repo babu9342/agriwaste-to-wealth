@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Company Profile</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to right, #4ED7F1, #38B6FF);
+            padding: 20px;
+            color: #333;
+            margin: 0;
+        }
+        .profile-container {
+            max-width: 1200px;
+            margin: auto;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        .company-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        .company-logo {
+            width: 120px;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 10px;
+            border: 3px solid #38B6FF;
+            margin-right: 25px;
+        }
+        .company-info {
+            flex: 1;
+        }
+        h2 {
+            color: #0077B6;
+            margin: 0 0 10px 0;
+        }
+        .company-details {
+            color: #666;
+            margin: 5px 0;
+        }
+        .info {
+            margin-top: 20px;
+        }
+        .info p {
+            margin: 12px 0;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        .btn {
+            padding: 12px 25px;
+            background: #38B6FF;
+            border: none;
+            color: white;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 15px 10px 0 0;
+            text-decoration: none;
+            display: inline-block;
+            transition: background 0.3s ease;
+        }
+        .btn:hover {
+            background: #2196F3;
+            transform: translateY(-2px);
+        }
+        .btn-dashboard {
+            background: #4CAF50;
+        }
+        .btn-dashboard:hover {
+            background: #45a049;
+        }
+        .btn-home {
+            background: #FF6B6B;
+        }
+        .btn-home:hover {
+            background: #ff5252;
+        }
+        .error {
+            color: #d32f2f;
+            background-color: #ffebee;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            border-left: 4px solid #d32f2f;
+        }
+        .success {
+            color: #2e7d32;
+            background-color: #e8f5e9;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            border-left: 4px solid #2e7d32;
+        }
+        .submission-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 30px;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .submission-table th {
+            background: linear-gradient(135deg, #38B6FF, #4ED7F1);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+        .submission-table td {
+            padding: 15px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .submission-table tr:hover {
+            background-color: #f8fdff;
+        }
+        .submission-table tr:last-child td {
+            border-bottom: none;
+        }
+        .logo-cell {
+            text-align: center;
+        }
+        .logo-placeholder {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(45deg, #f0f0f0, #e0e0e0);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .status-approved {
+            color: #2e7d32;
+            background-color: #e8f5e9;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        .status-pending {
+            color: #f57c00;
+            background-color: #fff3e0;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        .status-rejected {
+            color: #d32f2f;
+            background-color: #ffebee;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        .section-title {
+            color: #0077B6;
+            margin: 40px 0 20px 0;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #38B6FF;
+        }
+        .no-submissions {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+            background: #fafafa;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        .no-submissions a {
+            color: #38B6FF;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .no-submissions a:hover {
+            text-decoration: underline;
+        }
+        @media (max-width: 768px) {
+            .profile-container {
+                padding: 20px;
+                margin: 10px;
+            }
+            .company-header {
+                flex-direction: column;
+                text-align: center;
+            }
+            .company-logo {
+                margin-right: 0;
+                margin-bottom: 15px;
+            }
+            .submission-table {
+                font-size: 14px;
+            }
+            .submission-table th,
+            .submission-table td {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="profile-container">
+        <div class="company-header">
+            {{#if company}}
+                {{#if company.logo}}
+                <img src="/uploads/{{company.logo}}" class="company-logo" alt="Company Logo">
+                {{else}}
+                <div class="company-logo" style="display: flex; align-items: center; justify-content: center; background: #f0f0f0;">
+                    <span>No Logo</span>
+                </div>
+                {{/if}}
+                <div class="company-info">
+                    <h2>{{company.company_name}}</h2>
+                    <p class="company-details"><strong>Email:</strong> {{company.email}}</p>
+                    <p class="company-details"><strong>Location:</strong> {{company.location}}</p>
+                    <p class="company-details"><strong>Member Since:</strong> {{formatDate company.created_at}}</p>
+                </div>
+            {{else}}
+                <div class="company-info">
+                    <h2>{{companyName}}</h2>
+                </div>
+            {{/if}}
+        </div>
+        
+        {{#if error}}
+            <div class="error">{{error}}</div>
+        {{/if}}
+        
+        {{#if success}}
+            <div class="success">{{success}}</div>
+        {{/if}}
+
+        <h3 class="section-title">Your Submission History</h3>
+        
+        {{#if submissions.length}}
+            <table class="submission-table">
+                <thead>
+                    <tr>
+                        <th>Logo</th>
+                        <th>Date Submitted</th>
+                        <th>Company Name</th>
+                        <th>Email</th>
+                        <th>Address</th>
+                        <th>Quantity</th>
+                        <th>Requirements</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#each submissions}}
+                    <tr>
+                        <td class="logo-cell">
+                            {{#if this.logo}}
+                                <img src="/uploads/{{this.logo}}" alt="Company Logo" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px; border: 2px solid #38B6FF;">
+                            {{else}}
+                                <div class="logo-placeholder">No Logo</div>
+                            {{/if}}
+                        </td>
+                        <td>{{formatDate this.submitted_at}}</td>
+                        <td><strong>{{this.company_name}}</strong></td>
+                        <td>{{this.email}}</td>
+                        <td>{{this.address}}</td>
+                        <td>{{this.quantity}}</td>
+                        <td>{{this.requirements}}</td>
+                        <td>
+                            <span class="
+                                {{#if (eq this.approval_status 'approved')}}status-approved
+                                {{else if (eq this.approval_status 'rejected')}}status-rejected
+                                {{else}}status-pending{{/if}}">
+                                {{this.approval_status}}
+                            </span>
+                        </td>
+                    </tr>
+                    {{/each}}
+                </tbody>
+            </table>
+        {{else}}
+            <div class="no-submissions">
+                <h3>No Submissions Yet</h3>
+                <p>You haven't submitted any company details yet.</p>
+                <p><a href="/company/dashboard">Click here to submit your first request</a></p>
+            </div>
+        {{/if}}
+
+        <div class="action-buttons">
+            <a href="/company/dashboard" class="btn btn-dashboard">Submit New Request</a>
+            <a href="/" class="btn btn-home">Home Page</a>
+            {{#if submissions.length}}
+            <a href="/company/edit" class="btn">Edit Profile</a>
+            {{/if}}
+        </div>
+    </div>
+
+    <script>
+        function goToDashboard() {
+            window.location.href = "/company/dashboard";
+        }
+        
+        function goHome() {
+            window.location.href = "/";
+        }
+        
+        function editProfile() {
+            window.location.href = "/company/edit";
+        }
+    </script>
+</body>
+</html>
